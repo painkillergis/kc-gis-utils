@@ -1,5 +1,7 @@
 package com.painkillergis.kc_gis_utils
 
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.shouldBe
@@ -8,10 +10,10 @@ import java.sql.DriverManager
 
 class RootCommandLineTest : FunSpec({
   val commandLine = CommandLine(RootCommandLine())
-  test("app has a greeting") {
+  test("add and populate info column from info api by pin") {
     val db = tempfile()
-    val url = "jdbc:sqlite:$db"
-    val connection = DriverManager.getConnection(url)
+    val connectionString = "jdbc:sqlite:$db"
+    val connection = DriverManager.getConnection(connectionString)
     val tableName = "target_table_name"
     val pinColumnName = "PIN"
     val infoColumnName = "info"
@@ -28,7 +30,29 @@ class RootCommandLineTest : FunSpec({
       values ("first pin"), ("second pin"), ("third pin")
       """.trimIndent()
     )
-    captureOutput { commandLine.execute(url, tableName, pinColumnName, infoColumnName) } shouldBe Pair(
+    val wireMockServer = WireMockServer()
+    wireMockServer.start()
+    wireMockServer.stubFor(
+      get(urlPathEqualTo("/parcelviewer2/pvinfoquery.ashx")).withQueryParam("pin", equalTo("first pin"))
+        .willReturn(aResponse().withBody("""{"identifier":"PIN","items":[{"first":"item"}]}"""))
+    )
+    wireMockServer.stubFor(
+      get(urlPathEqualTo("/parcelviewer2/pvinfoquery.ashx")).withQueryParam("pin", equalTo("second pin"))
+        .willReturn(aResponse().withBody("""{"identifier":"PIN","items":[{"second":"item"}]}"""))
+    )
+    wireMockServer.stubFor(
+      get(urlPathEqualTo("/parcelviewer2/pvinfoquery.ashx")).withQueryParam("pin", equalTo("third pin"))
+        .willReturn(aResponse().withBody("""{"identifier":"PIN","items":[{"third":"item"}]}"""))
+    )
+    captureOutput {
+      commandLine.execute(
+        connectionString,
+        tableName,
+        pinColumnName,
+        infoColumnName,
+        wireMockServer.baseUrl()
+      )
+    } shouldBe Pair(
       "",
       "",
     )
@@ -39,9 +63,9 @@ class RootCommandLineTest : FunSpec({
       if (resultSet.next()) Pair(resultSet.getString(1), resultSet.getString(2))
       else null
     }.toList() shouldBe listOf(
-      Pair("first pin", "{}"),
-      Pair("second pin", "{}"),
-      Pair("third pin", "{}"),
+      Pair("first pin", """[{"first":"item"}]"""),
+      Pair("second pin", """[{"second":"item"}]"""),
+      Pair("third pin", """[{"third":"item"}]"""),
     )
   }
 })
