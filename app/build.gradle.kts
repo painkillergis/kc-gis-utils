@@ -9,6 +9,7 @@ repositories {
 
 dependencies {
   implementation("com.google.guava:guava:31.1-jre")
+  implementation("info.picocli:picocli:4.7.1")
   testImplementation("io.kotest:kotest-assertions-core-jvm:5.5.5")
   testImplementation("io.kotest:kotest-runner-junit5-jvm:5.5.5")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -16,7 +17,7 @@ dependencies {
 }
 
 application {
-  mainClass.set("com.painkillergis.kc_gis_utils.AppKt")
+  mainClass.set("com.painkillergis.kc_gis_utils.RootCommandLineKt")
 }
 
 tasks.named<Test>("test") {
