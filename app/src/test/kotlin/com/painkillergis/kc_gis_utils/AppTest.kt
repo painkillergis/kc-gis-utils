@@ -3,12 +3,12 @@
  */
 package com.painkillergis.kc_gis_utils
 
-import kotlin.test.Test
-import kotlin.test.assertNotNull
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 
-class AppTest {
-    @Test fun appHasAGreeting() {
-        val classUnderTest = App()
-        assertNotNull(classUnderTest.greeting, "app should have a greeting")
-    }
-}
+class AppTest : FunSpec({
+  test("app has a greeting") {
+    val classUnderTest = App()
+    classUnderTest.greeting shouldBe "Hello World!"
+  }
+})
