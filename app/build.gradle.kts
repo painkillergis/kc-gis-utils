@@ -10,7 +10,7 @@ repositories {
 dependencies {
   implementation("com.google.guava:guava:31.1-jre")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-  testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+  testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }
 
 application {
